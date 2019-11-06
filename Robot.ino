@@ -1,3 +1,6 @@
+/*currenttly contains code for initiilisation of I/O pins, servo calibration, and movement functions
+*/
+
 #include <Servo.h>
 #define DEBUG
 
