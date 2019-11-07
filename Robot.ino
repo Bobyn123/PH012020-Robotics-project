@@ -28,8 +28,11 @@ const int RF = 180;
 const int LF = 5;
 const int RB = 5;
 const int LB = 180;
-// state for interrupt button
-volatile byte state = HIGH;
+//LDR readings
+int val1 = analogRead(LDRr);
+int val2 = analogRead(LDRm);
+int val3 = analogRead(LDRl);
+
 
 void setLED (int green_state, int yellow_state, int red_state) {
   digitalWrite(GREEN, green_state);
@@ -160,12 +163,34 @@ void setup() {
 }
 void loop() {
   // put your main code here, to run repeatedly:
+setLED(1, 0, 0);
 
+Serial.print(" Val right  ");
+Serial.println(val1);
 
-  setLED(1, 0, 0);
+Serial.print(" Val mid ");
+Serial.println(val2);
 
-  Serial.println(StopR);
-  Serial.println(StopL);
+Serial.print(" Val left ");
+Serial.println(val3);
+
+if ((val1 > val2) && (val3 > val2)) {
+  Serial.println("Forward");
+  Forward(180, 0);
+  delay(500);
+}
+
+if ((val2 > val1) && (val3 > val1)) {
+  Serial.println("right");
+  Rturn();
+  delay(500);
+}
+
+if((val2 > val3) && (val3 < val1)){
+  Serial.println("left");
+  Lturn();
+  delay(500); 
+}
 
 
     //
@@ -177,8 +202,8 @@ void loop() {
     //    delay(1000);
     //    Backward(180, 0);
     //    delay(1000);
-    Halt();
-    delay(500);
+//     Halt();
+//     delay(500);
 
  
 }
