@@ -1,5 +1,5 @@
 /*currenttly contains code for initiilisation of I/O pins, servo calibration, and movement functions
-*/
+and basic line following algorithm*/
 
 #include <Servo.h>
 #define DEBUG
@@ -132,6 +132,9 @@ void Rturn() {
   leftServo.write(LF);
 }
 
+//int () {
+//  
+//}
 
 
 void setup() {
@@ -155,15 +158,10 @@ void setup() {
   //attach servos
   rightServo.attach(RW);
   leftServo.attach(LW);
-  
-  CalLeft();
-  waitKEY(PBL);
-  CalRight();
 
 }
 void loop() {
   // put your main code here, to run repeatedly:
-setLED(1, 0, 0);
 
 Serial.print(" Val right  ");
 Serial.println(val1);
@@ -192,7 +190,15 @@ if((val2 > val3) && (val3 < val1)){
   delay(500); 
 }
 
-
+//  CalLeft();
+//  waitKEY(PBL);
+//  CalRight();
+//  setLED(1, 0, 0);
+//
+//  Serial.println(StopR);
+//  Serial.println(StopL);
+//
+//  while (true) {
     //
     //    Forward(0, 180);
     //    delay(1000);
@@ -202,8 +208,8 @@ if((val2 > val3) && (val3 < val1)){
     //    delay(1000);
     //    Backward(180, 0);
     //    delay(1000);
-//     Halt();
-//     delay(500);
+//    Halt();
+//    delay(500);
 
- 
-}
+  }
+
