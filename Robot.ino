@@ -152,20 +152,22 @@ void setup() {
   //attach servos
   rightServo.attach(RW);
   leftServo.attach(LW);
+  
+  CalLeft();
+  waitKEY(PBL);
+  CalRight();
 
 }
 void loop() {
   // put your main code here, to run repeatedly:
 
-  CalLeft();
-  waitKEY(PBL);
-  CalRight();
+
   setLED(1, 0, 0);
 
   Serial.println(StopR);
   Serial.println(StopL);
 
-  while (true) {
+
     //
     //    Forward(0, 180);
     //    delay(1000);
@@ -178,5 +180,5 @@ void loop() {
     Halt();
     delay(500);
 
-  }
+ 
 }
