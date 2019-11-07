@@ -159,11 +159,13 @@ void setup() {
   CalLeft();
   waitKEY(PBL);
   CalRight();
+  setLED(1, 0, 0);
+  tone(8, 200, 20);
 
 }
 void loop() {
   // put your main code here, to run repeatedly:
-setLED(1, 0, 0);
+
 
 Serial.print(" Val right  ");
 Serial.println(val1);
