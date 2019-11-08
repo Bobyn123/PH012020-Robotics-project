@@ -151,12 +151,14 @@ void setup() {
   rightServo.attach(RW);
   leftServo.attach(LW);
 
+
   CalRight();
   CalLeft();
   setLED(1, 0, 0);
 }
 void loop() {
   // put your main code here, to run repeatedly:
+
 
 waitKEY(PBR);
  setspeed(45, -45);
