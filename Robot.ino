@@ -1,5 +1,5 @@
 /*currenttly contains code for initiilisation of I/O pins, servo calibration, and movement functions
-and basic line following algorithm*/
+  and basic line following algorithm*/
 
 #include <Servo.h>
 #define DEBUG
@@ -21,13 +21,9 @@ const int LDRl = 2;
 //const ints for IR emitter and reciever pins
 const int IRT = 3;
 const int IRR = 2;
-//servo position values
+//servo stop position int
 int StopR = 90;
 int StopL = 90;
-const int RF = 180;
-const int LF = 5;
-const int RB = 5;
-const int LB = 180;
 //LDR readings
 int val1 = analogRead(LDRr);
 int val2 = analogRead(LDRm);
@@ -69,7 +65,7 @@ void CalRight() {
 #endif
     }
     else if (digitalRead(PBR) == LOW) {
-     waitKEY(PBR);
+      waitKEY(PBR);
       break;
     }
   }
@@ -95,7 +91,7 @@ void CalLeft() {
 #endif
     }
     else if (digitalRead(PBR) == LOW) {
-     waitKEY(PBR);
+      waitKEY(PBR);
       break;
     }
   }
@@ -105,34 +101,30 @@ void CalLeft() {
 
 }
 
+void setspeed(int R, int L) {
+  rightServo.write(StopR - R);
+  leftServo.write(StopL + L);
+}
+
 void Halt() {
-  rightServo.write(StopR);
-  leftServo.write(StopL);
+  setspeed(0, 0);
 }
 
-void Forward(int R, int L) {
-  rightServo.write(R);
-  leftServo.write(L);
-  return;
+void Forward(int cm) {
+  int d = cm * 93;
+  setspeed(90, 90);
+  Serial.println(d);
+  delay(d);
 }
 
-void Backward (int R, int L) {
-  rightServo.write(R);
-  leftServo.write(L);
-  return;
+void Backward (int cm) {
+  int d = cm * 93;
+  setspeed(-90, -90);
+  Serial.println(d);
+  delay(d);
 }
-
-void Lturn() {
-  rightServo.write(RF);
-  leftServo.write(LB);
-}
-
-void Rturn() {
-  rightServo.write(RB);
-  leftServo.write(LF);
-}
-
-//int () {
+//
+//void turnAngle(deg){
 //  
 //}
 
@@ -159,57 +151,43 @@ void setup() {
   rightServo.attach(RW);
   leftServo.attach(LW);
 
+  CalRight();
+  CalLeft();
+  setLED(1, 0, 0);
 }
 void loop() {
   // put your main code here, to run repeatedly:
 
-Serial.print(" Val right  ");
-Serial.println(val1);
+waitKEY(PBR);
+ setspeed(45, -45);
+ waitKEY(PBL);Halt();
 
-Serial.print(" Val mid ");
-Serial.println(val2);
+  //Serial.print(" Val right  ");
+  //Serial.println(val1);
+  //
+  //Serial.print(" Val mid ");
+  //Serial.println(val2);
+  //
+  //Serial.print(" Val left ");
+  //Serial.println(val3);
+  //
+  //if ((val1 > val2) && (val3 > val2)) {
+  //  Serial.println("Forward");
+  //  Forward(90, 90);
+  //  delay(500);
+  //}
+  //
+  //if ((val2 > val1) && (val3 > val1)) {
+  //  Serial.println("right");
+  //  Rturn();
+  //  delay(500);
+  //}
+  //
+  //if((val2 > val3) && (val3 < val1)){
+  //  Serial.println("left");
+  //  Lturn();
+  //  delay(500);
+  //}
 
-Serial.print(" Val left ");
-Serial.println(val3);
 
-if ((val1 > val2) && (val3 > val2)) {
-  Serial.println("Forward");
-  Forward(180, 0);
-  delay(500);
 }
-
-if ((val2 > val1) && (val3 > val1)) {
-  Serial.println("right");
-  Rturn();
-  delay(500);
-}
-
-if((val2 > val3) && (val3 < val1)){
-  Serial.println("left");
-  Lturn();
-  delay(500); 
-}
-
-//  CalLeft();
-//  waitKEY(PBL);
-//  CalRight();
-//  setLED(1, 0, 0);
-//
-//  Serial.println(StopR);
-//  Serial.println(StopL);
-//
-//  while (true) {
-    //
-    //    Forward(0, 180);
-    //    delay(1000);
-    //    Halt();
-    //    delay(500);
-    //    Rturn();
-    //    delay(1000);
-    //    Backward(180, 0);
-    //    delay(1000);
-//    Halt();
-//    delay(500);
-
-  }
-
