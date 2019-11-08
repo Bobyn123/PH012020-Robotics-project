@@ -14,4 +14,4 @@ times in s
 4.80
 4.93
 results
-average time of 4.933s to travers 53cm so 9.866s ish to travel 106cm or 9.3s to travel 100cm with erros I cba to calculate
+average time of 4.933s to travers 53cm so 9.866s ish to travel 106cm or 9.3s to travel 100cm hence 0.093s to travel 1cm with erros I cba to calculate
