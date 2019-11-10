@@ -1,5 +1,5 @@
 /*currenttly contains code for initiilisation of I/O pins, servo calibration, and movement functions
-  and basic line following algorithm*/
+*/
 
 #include <Servo.h>
 #define DEBUG
@@ -28,14 +28,18 @@ int StopL = 90;
 int val1 = analogRead(LDRr);
 int val2 = analogRead(LDRm);
 int val3 = analogRead(LDRl);
+//const ints for distance and turn time
+const float turn = 16.3;
+const int distance = 93;
 
-
+//set states for green, yellow, red LED
 void setLED (int green_state, int yellow_state, int red_state) {
   digitalWrite(GREEN, green_state);
   digitalWrite(YELLOW, yellow_state);
   digitalWrite(RED, red_state);
 }
 
+//waits for left or right pushbutton
 void waitKEY(int pin) {
   while (digitalRead(pin) == HIGH) {
     delay(20);
@@ -45,16 +49,19 @@ void waitKEY(int pin) {
   }
 }
 
+//attach left and right servo
 Servo leftServo;
 Servo rightServo;
 
+//calibration function can probably simplify for arbitrary servo latter
 void CalRight() {
   setLED(0, 0, 1);
-  leftServo.write(StopL);
+  leftServo.write(StopL); //starts other servo at predefined value for voltage draw reasons
 #ifdef DEBUG
   Serial.println("Cal Left");
 #endif
   while (true) {
+    //    if left pushbutton pressed increment servo stop value by 1 and start servo at new value
     if (digitalRead(PBL) == LOW) {
       rightServo.write(StopR);
       waitKEY(PBL);
@@ -64,6 +71,7 @@ void CalRight() {
       Serial.println(StopR);
 #endif
     }
+    //    if right pushbutton pressed break from calibration loop
     else if (digitalRead(PBR) == LOW) {
       waitKEY(PBR);
       break;
@@ -74,6 +82,7 @@ void CalRight() {
 #endif
 }
 
+//same as above but for left servo
 void CalLeft() {
   setLED(0, 1, 1);
   rightServo.write(StopR);
@@ -101,32 +110,55 @@ void CalLeft() {
 
 }
 
+//setspeed for both servos in format that has stop value at 0 forward is + backwars is -
 void setspeed(int R, int L) {
   rightServo.write(StopR - R);
   leftServo.write(StopL + L);
 }
 
+//halt
 void Halt() {
   setspeed(0, 0);
 }
 
+//takes input distance in cm and travels that distance
 void Forward(int cm) {
-  int d = cm * 93;
+  int distanceTime = cm * distance;
   setspeed(90, 90);
-  Serial.println(d);
-  delay(d);
+  delay(distanceTime);
+  Halt();
 }
 
+//same but for backwards
 void Backward (int cm) {
-  int d = cm * 93;
+  int distanceTime = cm * distance; //multiple distance entered by time required for one cm
   setspeed(-90, -90);
-  Serial.println(d);
-  delay(d);
+  delay(distanceTime);
+  Halt();
 }
-//
-//void turnAngle(deg){
-//  
-//}
+
+void turnAngle(int deg) {
+  float turnTime = (abs(deg) * turn);
+  #ifdef DEBUG
+  Serial.println(deg);
+  Serial.println(turnTime);
+  #endif
+// if angle is positive turn right
+  if (deg < 0) {
+    setspeed(45, -45);
+    delay(turnTime);
+    Halt();
+  }
+//  if value is negative, turn left
+  if (deg > 0) {
+    setspeed(-45, 45);
+    delay(turnTime);
+    Halt();
+  }
+  else {
+    return;
+  }
+}
 
 
 void setup() {
@@ -158,36 +190,21 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
-waitKEY(PBR);
- setspeed(45, -45);
- waitKEY(PBL);Halt();
+Halt();
+waitKEY(PBL);
+turnAngle(90);
 
-  //Serial.print(" Val right  ");
-  //Serial.println(val1);
-  //
-  //Serial.print(" Val mid ");
-  //Serial.println(val2);
-  //
-  //Serial.print(" Val left ");
-  //Serial.println(val3);
-  //
-  //if ((val1 > val2) && (val3 > val2)) {
-  //  Serial.println("Forward");
-  //  Forward(90, 90);
-  //  delay(500);
-  //}
-  //
-  //if ((val2 > val1) && (val3 > val1)) {
-  //  Serial.println("right");
-  //  Rturn();
-  //  delay(500);
-  //}
-  //
-  //if((val2 > val3) && (val3 < val1)){
-  //  Serial.println("left");
-  //  Lturn();
-  //  delay(500);
-  //}
-
+Halt();
+waitKEY(PBL);
+Forward(50);
+turnAngle(90);
+Forward(25);
+turnAngle(90);
+Forward(25);
+turnAngle(90);
+Forward(25);
+turnAngle(-90);
+Forward(25);
+turnAngle(180);
 
 }
