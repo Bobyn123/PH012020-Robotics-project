@@ -122,16 +122,20 @@ void Halt() {
 }
 
 //takes input distance in cm and travels that distance
-void Forward(int cm) {
+void Forward(float cm) {
   int distanceTime = cm * distance;
+  Halt();
+  delay(25);
   setspeed(90, 90);
   delay(distanceTime);
   Halt();
 }
 
 //same but for backwards
-void Backward (int cm) {
+void Backward (float cm) {
   int distanceTime = cm * distance; //multiple distance entered by time required for one cm
+  Halt();
+  delay(25);
   setspeed(-90, -90);
   delay(distanceTime);
   Halt();
@@ -139,18 +143,22 @@ void Backward (int cm) {
 
 void turnAngle(int deg) {
   float turnTime = (abs(deg) * turn);
-  #ifdef DEBUG
+#ifdef DEBUG
   Serial.println(deg);
   Serial.println(turnTime);
-  #endif
-// if angle is positive turn right
+#endif
+  // if angle is positive turn right
   if (deg < 0) {
+    Halt();
+    delay(25);
     setspeed(45, -45);
     delay(turnTime);
     Halt();
   }
-//  if value is negative, turn left
+  //  if value is negative, turn left
   if (deg > 0) {
+    Halt();
+    delay(25);
     setspeed(-45, 45);
     delay(turnTime);
     Halt();
@@ -160,6 +168,15 @@ void turnAngle(int deg) {
   }
 }
 
+void Crab(float cm) {
+  Forward(20*cm);
+  turnAngle(45);
+  Backward(5*cm);
+  turnAngle(-15);
+  Backward(10*cm);
+  turnAngle(-30);
+  Backward(8*cm);
+}
 
 void setup() {
 
@@ -190,21 +207,8 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
-Halt();
-waitKEY(PBL);
-turnAngle(90);
-
-Halt();
-waitKEY(PBL);
-Forward(50);
-turnAngle(90);
-Forward(25);
-turnAngle(90);
-Forward(25);
-turnAngle(90);
-Forward(25);
-turnAngle(-90);
-Forward(25);
-turnAngle(180);
+  Halt();
+  waitKEY(PBL);
+  Crab(0.5);
 
 }
