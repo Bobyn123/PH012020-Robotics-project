@@ -1,6 +1,8 @@
 # PH012020-Robotics-project
 Code and notes related to module practical work
 
+robot dimensions 9.5cmx14.8cm
+
 data for travel speed:
 performed on table
 times in s
