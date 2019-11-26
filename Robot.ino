@@ -347,3 +347,33 @@ Serial.println(leftThresh);
   setLED(1, 0, 0);
 }
 void loop() {
+
+
+  //middle LDR sees dark
+  if (analogRead(LDRm) < midThresh ) {
+#ifdef DEBUG LINE
+    Serial.println("forward");
+#endif
+    Forward(5);
+  }
+
+  // left LDR sees dark
+  if ((analogRead(LDRl) < leftThresh) || ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ))) {
+#ifdef DEBUG LINE
+    Serial.println("turn left");
+#endif
+    turnAngle(-10);
+    Forward(5);
+  }
+
+  //right LDR sees dark
+  if ((analogRead(LDRr) < rightThresh) || ((analogRead(LDRr) < rightThresh) && (analogRead(LDRm) < midThresh ))) {
+#ifdef DEBUG LINE
+    Serial.println("turn right");
+#endif
+    turnAngle(10);
+    Forward(5);
+  }
+
+
+}
