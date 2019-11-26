@@ -26,9 +26,9 @@ const int LDRr = A0;
 const int LDRm = A1;
 const int LDRl = A2;
 //LDR mid light values
-int rightLDRav = EEPROM.read(16);
-int midLDRav = EEPROM.read(13);
-int leftLDRav = EEPROM.read(10);
+int rightThresh = EEPROM.read(16);
+int midThresh = EEPROM.read(13);
+int leftThresh = EEPROM.read(10);
 //const ints for IR emitter and reciever pins
 const int IRT = 3;
 const int IRR = 2;
@@ -212,21 +212,21 @@ void calLDR() {
 
   //  taking average between light and dark
 
-  rightLDRav = ((lightR + darkR) / 2);
-  midLDRav = ((lightM + darkM) / 2);
-  leftLDRav = ((lightL + darkL) / 2);
+  rightThresh = ((lightR + darkR) / 2);
+  midThresh = ((lightM + darkM) / 2);
+  leftThresh = ((lightL + darkL) / 2);
 
-  EEPROM.update(16, rightLDRav);
-  EEPROM.update(13, midLDRav);
-  EEPROM.update(10, leftLDRav);
+  EEPROM.update(16, rightThresh);
+  EEPROM.update(13, midThresh);
+  EEPROM.update(10, leftThresh);
 
 #ifdef DEBUG CAL
   Serial.print("Right average light ");
-  Serial.println(rightLDRav);
+  Serial.println(rightThresh);
   Serial.print("Mid average light ");
-  Serial.println(midLDRav);
+  Serial.println(midThresh);
   Serial.print("Left average light ");
-  Serial.println(leftLDRav);
+  Serial.println(leftThresh);
 #endif
   waitKEY(PBR);
   return;
@@ -340,7 +340,7 @@ void loop() {
   //            Serial.println("No obstacle detected");
   //    #endif
   //middle LDR sees dark
-  if (analogRead(LDRm) < midLDRav ) {
+  if (analogRead(LDRm) < midThresh ) {
 #ifdef DEBUG LINE
     Serial.println("forward");
 #endif
@@ -348,7 +348,7 @@ void loop() {
   }
 
   // left LDR sees dark
-  if ((analogRead(LDRl) < leftLDRav) || ((analogRead(LDRl) < leftLDRav) && (analogRead(LDRm) < midLDRav ))) {
+  if ((analogRead(LDRl) < leftThresh) || ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ))) {
 #ifdef DEBUG LINE
     Serial.println("turn left");
 #endif
@@ -357,7 +357,7 @@ void loop() {
   }
 
   //right LDR sees dark
-  if ((analogRead(LDRr) < rightLDRav) || ((analogRead(LDRr) < rightLDRav) && (analogRead(LDRm) < midLDRav ))) {
+  if ((analogRead(LDRr) < rightThresh) || ((analogRead(LDRr) < rightThresh) && (analogRead(LDRm) < midThresh ))) {
 #ifdef DEBUG LINE
     Serial.println("turn right");
 #endif
