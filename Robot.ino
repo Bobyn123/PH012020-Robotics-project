@@ -1,12 +1,22 @@
 /*currenttly contains code for initiilisation of I/O pins, servo calibration, movement functions
   and object detection*/
 
+
+
 #include <Servo.h>
 #include <EEPROM.h>
 //#define DEBUG CAL
 #define DEBUG LINE
 #define DEBUG IR
-#define CAL
+//#define CAL
+
+// required to read EEPROM values for calibration settings 
+unsigned int readUIValue(int eepromAddress) {
+  unsigned int uiVal;
+  EEPROM.get(eepromAddress, uiVal);
+
+  return uiVal;
+}
 
 //const ints for LED pins
 const int GREEN = 7;
@@ -26,12 +36,15 @@ const int LDRr = A0;
 const int LDRm = A1;
 const int LDRl = A2;
 //LDR mid light values
-int rightThresh = EEPROM.read(16);
-int midThresh = EEPROM.read(13);
-int leftThresh = EEPROM.read(10);
+int rightThresh = readUIValue(16);
+int midThresh = readUIValue(13);
+int leftThresh = readUIValue(10);
 //const ints for IR emitter and reciever pins
 const int IRT = 3;
 const int IRR = 2;
+//right and left servo stop values 
+const int stopL = EEPROM.read(0);
+const int stopR = EEPROM.read(1);
 //const ints for distance and turn time
 const float turn = 16.3;
 const int distance = 93;
@@ -74,10 +87,12 @@ int scan() {
   return scanState;
 }
 
+
 //create left and right servo objects
 Servo leftServo;
 Servo rightServo;
 
+#ifdef CAL
 /* calibration function for both servos sleft servo calibrated first then right
     to calibrate:
     observe left servo to see if it has stopped, if it has not stopped
@@ -232,10 +247,12 @@ void calLDR() {
   return;
 }
 
+#endif
+
 //setspeed for both servos in format that has stop value at 0, forward is + backwars is -
 void setspeed(int R, int L) {
-  rightServo.write(EEPROM.read(1) - R);
-  leftServo.write(EEPROM.read(0) + L);
+  rightServo.write(stopR - R);
+  leftServo.write(stopL + L);
 }
 
 //stops motors
@@ -320,50 +337,13 @@ void setup() {
   setLED(0, 1, 1);
   calLDR();
 #endif
+
+Serial.println(stopR);
+Serial.println(stopL);
+Serial.println(rightThresh);
+Serial.println(midThresh);
+Serial.println(leftThresh);
+
   setLED(1, 0, 0);
 }
 void loop() {
-
-
-
-
-  //    //  if object is found turn 180, else follow line
-  //        if (scan()) {
-  //            Halt();
-  //  //          turnAngle(180);
-  //    #ifdef DEBUG IR
-  //            Serial.println("Obbstacle detected");
-  //    #endif
-  //          }
-  //          else {
-  //    #ifdef DEBUG IR
-  //            Serial.println("No obstacle detected");
-  //    #endif
-  //middle LDR sees dark
-  if (analogRead(LDRm) < midThresh ) {
-#ifdef DEBUG LINE
-    Serial.println("forward");
-#endif
-    Forward(5);
-  }
-
-  // left LDR sees dark
-  if ((analogRead(LDRl) < leftThresh) || ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ))) {
-#ifdef DEBUG LINE
-    Serial.println("turn left");
-#endif
-    turnAngle(-10);
-    Forward(5);
-  }
-
-  //right LDR sees dark
-  if ((analogRead(LDRr) < rightThresh) || ((analogRead(LDRr) < rightThresh) && (analogRead(LDRm) < midThresh ))) {
-#ifdef DEBUG LINE
-    Serial.println("turn right");
-#endif
-    turnAngle(10);
-    Forward(5);
-  }
-
-
-}
