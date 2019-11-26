@@ -3,6 +3,13 @@ Code and notes related to module practical work
 
 robot dimensions 9.5cmx14.8cm
 
+need to modify movement functions to move specified distance based on the wheel diamater and make use of specific offset values for both servos to have robot move in straight line 
+
+https://va-dcfll.org/distance-to-rotation-formula/
+
+final test will be performed on paper surface
+
+
 data for travel speed:
 performed on table
 times in s
