@@ -10,7 +10,12 @@
 #define DEBUG IR
 //#define CAL
 
-// required to read EEPROM values for calibration settings 
+#define DANCE
+//#define LINE
+#define OBSTACLE
+#define JUNCT
+
+// required to read EEPROM values for calibration settings
 unsigned int readUIValue(int eepromAddress) {
   unsigned int uiVal;
   EEPROM.get(eepromAddress, uiVal);
@@ -42,7 +47,7 @@ int leftThresh = readUIValue(10);
 //const ints for IR emitter and reciever pins
 const int IRT = 3;
 const int IRR = 2;
-//right and left servo stop values 
+//right and left servo stop values
 const int stopL = EEPROM.read(0);
 const int stopR = EEPROM.read(1);
 //const ints for distance and turn time
@@ -305,6 +310,18 @@ void turnAngle(int deg) {
   }
 }
 
+//takes an input time in seconds and dances for that amount of time 
+void danceTime(unsigned int Time) {
+  Time = Time * 1000;
+  unsigned int start = millis();
+  unsigned int endTime = start;
+  int loopCount = 0;
+  while ((endTime - start) <= Time) {
+//    dance moves
+    endTime = millis();
+  }
+Serial.println("Freedom");
+}
 
 void setup() {
 
@@ -338,17 +355,29 @@ void setup() {
   calLDR();
 #endif
 
-Serial.println(stopR);
-Serial.println(stopL);
-Serial.println(rightThresh);
-Serial.println(midThresh);
-Serial.println(leftThresh);
+  //Serial.println(stopR);
+  //Serial.println(stopL);
+  //Serial.println(rightThresh);
+  //Serial.println(midThresh);
+  //Serial.println(leftThresh);
 
   setLED(1, 0, 0);
 }
 void loop() {
 
 
+#ifdef DANCE
+  //demonstration of straight line movement
+  Forward(50);
+  Backward(50);
+  //demonstraction of turn in place
+  turnAngle(90);
+  turnAngle(-90);
+  //Dance time
+  danceTime(20);
+#endif
+
+#ifdef LINE
   //middle LDR sees dark
   if (analogRead(LDRm) < midThresh ) {
 #ifdef DEBUG LINE
@@ -374,6 +403,6 @@ void loop() {
     turnAngle(10);
     Forward(5);
   }
-
+#endif
 
 }
