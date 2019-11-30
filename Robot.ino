@@ -15,7 +15,7 @@
 #define OBSTACLE
 #define JUNCT
 
-// required to read EEPROM values for calibration settings
+// required to read EEPROM values for calibration settings 
 unsigned int readUIValue(int eepromAddress) {
   unsigned int uiVal;
   EEPROM.get(eepromAddress, uiVal);
@@ -47,9 +47,13 @@ int leftThresh = readUIValue(10);
 //const ints for IR emitter and reciever pins
 const int IRT = 3;
 const int IRR = 2;
-//right and left servo stop values
+//right and left servo stop values 
 const int stopL = EEPROM.read(0);
 const int stopR = EEPROM.read(1);
+//const ints related to wheel diamater and servo offsets
+const int leftServoOffset = EEPROM.read(2);
+const int rightServoOffset = EEPROM.read(3);
+const int wheelDiameter = EEPROM.read(4);
 //const ints for distance and turn time
 const float turn = 16.3;
 const int distance = 93;
@@ -267,19 +271,19 @@ void Halt() {
 }
 
 //takes input distance in cm and travels that distance
-void Forward(float cm) {
-  int distanceTime = cm * distance;
+void Forward(float mm) {
+  unsigned int distanceTime = 1178*( mm /(wheelDiameter*PI));
   Halt();
-  setspeed(90, 90);
+  setspeed(rightServoOffset, leftServoOffset);
   delay(distanceTime);
   Halt();
 }
 
 //same but for backwards
-void Backward (float cm) {
-  int distanceTime = cm * distance; //multiple distance entered by time required for one cm
+void Backward (float mm) {
+  unsigned int distanceTime = 1178*( mm /(wheelDiameter*PI)); //multiply distance entered by time required for one cm
   Halt();
-  setspeed(-90, -90);
+  setspeed(-rightServoOffset, -leftServoOffset);
   delay(distanceTime);
   Halt();
 }
@@ -354,16 +358,18 @@ void setup() {
   setLED(0, 1, 1);
   calLDR();
 #endif
-
-  //Serial.println(stopR);
-  //Serial.println(stopL);
-  //Serial.println(rightThresh);
-  //Serial.println(midThresh);
-  //Serial.println(leftThresh);
+Serial.println(PI);
+Serial.println(stopR);
+Serial.println(stopL);
+Serial.println(wheelDiameter);
+Serial.println(rightThresh);
+Serial.println(midThresh);
+Serial.println(leftThresh);
 
   setLED(1, 0, 0);
 }
 void loop() {
+
 
 
 #ifdef DANCE
