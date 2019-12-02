@@ -9,8 +9,8 @@
 //#define DEBUG LDR
 //#define DEBUG LINE
 //#define DEBUG IR
-//#define CAL
 
+//#define CAL
 
 //#define DANCE
 #define LINE
@@ -57,8 +57,8 @@ const int leftServoOffset = EEPROM.read(2);
 const int rightServoOffset = EEPROM.read(3);
 const int wheelDiameter = EEPROM.read(4);
 //const ints for distance and turn time
-const float turn = 16.3;
-const int rotationSpeed = 93;
+const float timeForOneDegreeTurn = 16.3;
+const int timeForOneCmRotation = 11780;
 
 const int pi = 3.14159;
 
@@ -163,6 +163,7 @@ void calServo () {
 
 //function for calibrating light levels
 void calLDR() {
+  Serial.println("Cal light readings");
   waitKEY(PBL);
   //  initilise ints to store average of light and dark values
   int lightR = 0;
@@ -175,9 +176,9 @@ void calLDR() {
   //  take 100 light level readings and sum readings
   for (int i = 0; i <= 25; i++) {
     //LDR readings
-    int valR;
-    int valM;
-    int valL;
+    unsigned int valR;
+    unsigned int valM;
+    unsigned int valL;
     valR = analogRead(LDRr);
     valM = analogRead(LDRm);
     valL = analogRead(LDRl);
@@ -198,15 +199,15 @@ void calLDR() {
     lightL = lightL + valL;
 
   }
-
+  Serial.println("Cal dark readings");
   waitKEY(PBR);
 
   // take 100 dark level readings and sum readings
   for (int i = 0; i <= 25; i++) {
     //LDR readings
-    int valR;
-    int valM;
-    int valL;
+    unsigned int valR;
+    unsigned int valM;
+    unsigned int valL;
     valR = analogRead(LDRr);
     valM = analogRead(LDRm);
     valL = analogRead(LDRl);
@@ -284,6 +285,7 @@ void debugLDR() {
   if  (analogRead(LDRr) > rightThresh ) {
     Serial.println("right ldr sees light");
   }
+  delay(500);
 }
 
 #endif
@@ -302,7 +304,7 @@ void Halt() {
 
 //takes input distance in cm and travels that distance
 void Forward(float mm) {
-  unsigned int distanceTime = 10 * (1178 * ( mm / (wheelDiameter * pi)));
+  unsigned int distanceTime = (timeForOneCmRotation * ( mm / (wheelDiameter * pi)));
   Halt();
   setspeed(rightServoOffset, leftServoOffset);
   delay(distanceTime);
@@ -311,7 +313,7 @@ void Forward(float mm) {
 
 //same but for backwards
 void Backward (float mm) {
-  unsigned int distanceTime = 10 * (1178 * ( mm / (wheelDiameter * pi))); //multiply distance entered by time required for one cm
+  unsigned int distanceTime = (timeForOneCmRotation * ( mm / (wheelDiameter * pi))); //multiply distance entered by time required for one cm
   Halt();
   setspeed(-rightServoOffset, -leftServoOffset);
   delay(distanceTime);
@@ -320,7 +322,7 @@ void Backward (float mm) {
 
 //takes input in degrees and multiplies by time taken to turn one degree
 void turnAngle(int deg) {
-  float turnTime = (abs(deg) * turn);
+  float turnTime = (abs(deg) * timeForOneDegreeTurn);
 #ifdef DEBUG
   Serial.println(deg);
   Serial.println(turnTime);
@@ -359,20 +361,24 @@ void danceTime(unsigned int Time) {
 
 void lineFollow() {
 
+  //  setLED(0, 0, 0);
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* all three don't see line turn 1 degree untill line found */
-    turnAngle(1);
+    turnAngle(15);
+    //    setLED(0, 0, 1);
   }
 
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) < rightThresh )) { /* only right sees line hard turn right */
-    turnAngle(5);
+    turnAngle(10);
+    //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("only right sees line hard turn right");
 #endif
   }
 
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* right and mid see line gentle turn right */
-    turnAngle(1);
+    turnAngle(5);
     Forward(1);
+    //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("right and mid see line gentle turn right");
 #endif
@@ -380,29 +386,36 @@ void lineFollow() {
 
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* best case mid sees line left and right don't on track forwards */
     Forward(3);
+    //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("best case mid sees line left and right don't on track forwards");
 #endif
   }
 
   if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* left and mid see line, light turn left */
-    turnAngle(-1);
+    turnAngle(-5);
     Forward(1);
+    //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("left and mid see line, light turn left");
 #endif
   }
 
   if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* only left sees line hard turn left */
-    turnAngle(-5);
+    turnAngle(-10);
+    //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("only left sees line hard turn left ");
 #endif
   }
 
-  //if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) /* all three see line scan for junction */ {
-  //
-  //}
+  if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* all three see line scan for junction */
+    Forward(1);
+    //    setLED(0,1,0);
+#ifdef DEBUG LINE
+    Serial.println("all three sensors see black, start scanning for junction and move forward");
+#endif
+  }
 
 }
 
@@ -437,6 +450,7 @@ void setup() {
   setLED(0, 1, 1);
   calLDR();
 #endif
+
   Serial.println(PI);
   Serial.println(stopR);
   Serial.println(stopL);
@@ -452,6 +466,8 @@ void setup() {
 void loop() {
 
   waitKEY(PBL);
+
+
   while (true) {
 #ifdef DANCE
     //demonstration of straight line movement
@@ -465,9 +481,24 @@ void loop() {
 #endif
 
 #ifdef LINE
+
     lineFollow();
 
 #endif
 
+
+#ifdef OBSTACLE
+
+    Serial.println("here");
+    if (scan()) {
+      Serial.println("turn");
+      turnAngle(180);
+    }
+    else {
+      Serial.println("follow");
+      lineFollow();
+    }
+
+#endif
   }
 }
