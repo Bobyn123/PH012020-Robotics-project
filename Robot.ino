@@ -12,8 +12,8 @@
 
 //#define CAL
 
-//#define DANCE
-#define LINE
+#define DANCE
+//#define LINE
 //#define OBSTACLE
 //#define JUNCT
 
@@ -354,12 +354,24 @@ void danceTime(unsigned int Time) {
   int loopCount = 0;
   while ((endTime - start) <= Time) {
     //    dance moves
+    Forward(5);
+    turnAngle(-90);
+    Backward(5);
+    turnAngle(180);
+    Backward(10);
+    Forward(5);
+    turnAngle(-90);
+    Backward(5);
     endTime = millis();
   }
   Serial.println("Freedom");
 }
 
-void lineFollow() {
+void lineFollow(int distanceGoal) {
+
+unsigned int distanceTravelled = 0;
+
+while (distanceTravelled < distanceGoal) {
 
   //  setLED(0, 0, 0);
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* all three don't see line turn 1 degree untill line found */
@@ -378,6 +390,7 @@ void lineFollow() {
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* right and mid see line gentle turn right */
     turnAngle(5);
     Forward(1);
+    distanceTravelled += 1;
     //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("right and mid see line gentle turn right");
@@ -386,6 +399,7 @@ void lineFollow() {
 
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* best case mid sees line left and right don't on track forwards */
     Forward(3);
+    distanceTravelled += 3;
     //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("best case mid sees line left and right don't on track forwards");
@@ -395,6 +409,7 @@ void lineFollow() {
   if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* left and mid see line, light turn left */
     turnAngle(-5);
     Forward(1);
+    distanceTravelled += 1;
     //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("left and mid see line, light turn left");
@@ -416,7 +431,7 @@ void lineFollow() {
     Serial.println("all three sensors see black, start scanning for junction and move forward");
 #endif
   }
-
+}
 }
 
 void setup() {
@@ -468,18 +483,18 @@ void loop() {
   waitKEY(PBL);
 
 
-  while (true) {
+  
 #ifdef DANCE
-    //demonstration of straight line movement
-    Forward(50);
-    Backward(50);
-    //demonstraction of turn in place
-    turnAngle(90);
-    turnAngle(-90);
+//    //demonstration of straight line movement
+//    Forward(50);
+//    Backward(50);
+//    //demonstraction of turn in place
+//    turnAngle(90);
+//    turnAngle(-90);
     //Dance time
-    //  danceTime(20);
+      danceTime(20);
 #endif
-
+while (true) {
 #ifdef LINE
 
     lineFollow();
