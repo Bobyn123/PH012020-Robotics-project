@@ -389,8 +389,8 @@ while (distanceTravelled < distanceGoal) {
 
   if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* right and mid see line gentle turn right */
     turnAngle(5);
-    Forward(1);
-    distanceTravelled += 1;
+    // Forward(1);
+    //  distanceTravelled += 1;
     //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("right and mid see line gentle turn right");
@@ -408,8 +408,8 @@ while (distanceTravelled < distanceGoal) {
 
   if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* left and mid see line, light turn left */
     turnAngle(-5);
-    Forward(1);
-    distanceTravelled += 1;
+  //   Forward(1);
+   //  distanceTravelled += 1;
     //    setLED(0,1,0);
 #ifdef DEBUG LINE
     Serial.println("left and mid see line, light turn left");
