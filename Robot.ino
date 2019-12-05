@@ -5,18 +5,19 @@
 
 #include <Servo.h>
 #include <EEPROM.h>
+//#define DEBUG
 //#define DEBUG CAL
 //#define DEBUG LDR
 //#define DEBUG LINE
 //#define DEBUG IR
-#define DEBUG JUNCT
+//#define DEBUG JUNCT
 
 //#define CAL
 
 //#define DANCE
 #define LINE
-//#define OBSTACLE
-//#define JUNCT
+#define OBSTACLE
+#define JUNCT
 
 // required to read EEPROM values for calibration settings
 unsigned int readUIValue(int eepromAddress) {
@@ -70,13 +71,45 @@ void setLED (int green_state, int yellow_state, int red_state) {
   digitalWrite(RED, red_state);
 }
 
-//waits for left or right pushbutton
-void waitKEY(int pin) {
-  while (digitalRead(pin) == HIGH) {
-    delay(20);
-  }
-  while (digitalRead(pin) == LOW) {
-    delay(20);
+//waits for either or both pushbuttons, to set which pushbutton combination to wait for, set the appropriate int to 1 to wait for the button and 0 to not wait
+byte waitKEY(byte leftButton, byte rightButton) {
+  //  if waiting for left push button is desired
+  byte leftButtonState = 0;
+  byte rightButtonState = 0;
+
+  while (true) {
+
+    if (digitalRead(PBL) == HIGH && digitalRead(PBR) == HIGH) {
+      leftButtonState = 0;
+      rightButtonState = 0;
+      delay(100);
+      return 0;
+    }
+    else {
+
+      if (digitalRead(PBL) == LOW) {
+        leftButtonState = 1;
+#ifdef DEBUG
+        Serial.println(leftButtonState);
+        Serial.println(leftButton);
+#endif
+        delay(20);
+      }
+
+      if (digitalRead(PBR) == LOW) {
+#ifdef DEBUG
+        Serial.println(rightButtonState);
+        Serial.println(rightButton);
+#endif
+        rightButtonState = 1;
+        delay(20);
+      }
+
+      if (leftButton == leftButtonState && rightButton == rightButtonState) {
+          delay(100);
+        return 1;
+      }
+    }
   }
 }
 
@@ -124,7 +157,7 @@ void calServo () {
   while (true) {
     if (digitalRead(PBL) == LOW) {
       leftServo.write(StopL);
-      waitKEY(PBL);
+      waitKEY(1, 0);
       StopL++;
 #ifdef DEBUG CAL
       Serial.print("increment of L");
@@ -132,7 +165,7 @@ void calServo () {
 #endif
     }
     else if (digitalRead(PBR) == LOW) {
-      waitKEY(PBR);
+      waitKEY(0, 1);
 #ifdef DEBUG CAL
       Serial.println("End Cal Left");
       Serial.println("Cal Right");
@@ -140,7 +173,7 @@ void calServo () {
       while (true) {
         if (digitalRead(PBL) == LOW) {
           rightServo.write(StopR);
-          waitKEY(PBL);
+          waitKEY(1, 0);
           StopR++;
 #ifdef DEBUG CAL
           Serial.print("increment of R");
@@ -148,7 +181,7 @@ void calServo () {
 #endif
         }
         else if (digitalRead(PBR) == LOW) {
-          waitKEY(PBR);
+          waitKEY(0, 1);
 #ifdef DEBUG CAL
           Serial.println("End Cal Right");
 #endif
@@ -165,7 +198,7 @@ void calServo () {
 //function for calibrating light levels
 void calLDR() {
   Serial.println("Cal light readings");
-  waitKEY(PBL);
+  waitKEY(1, 0);
   //  initilise ints to store average of light and dark values
   int lightR = 0;
   int darkR = 0;
@@ -201,7 +234,7 @@ void calLDR() {
 
   }
   Serial.println("Cal dark readings");
-  waitKEY(PBR);
+  waitKEY(0, 1);
 
   // take 100 dark level readings and sum readings
   for (int i = 0; i <= 25; i++) {
@@ -258,7 +291,7 @@ void calLDR() {
   Serial.print("Left average light ");
   Serial.println(leftThresh);
 #endif
-  waitKEY(PBR);
+  waitKEY(0, 1);
   return;
 }
 
@@ -266,6 +299,7 @@ void calLDR() {
 
 #ifdef DEBUG LDR
 
+//function to check state of LDR reeadings against threshold and report if light or dark is seen reletive to refference
 void debugLDR() {
 
   if  (analogRead(LDRl) < leftThresh) {
@@ -354,21 +388,21 @@ void danceTime(unsigned int Time) {
   unsigned int endTime = start;
   while ((endTime - start) <= Time) {
     //    dance moves
-    setLED(0,0,0);
+    setLED(0, 0, 0);
     Forward(5);
-    setLED(1,0,1);
-    turnAngle(-90);
-    setLED(0,1,0);
-    Backward(5);
-    setLED(0,0,1);
-    turnAngle(180);
-    setLED(1,0,0);
+    setLED(0, 1, 0);
+    turnAngle(90);
+    setLED(1, 0, 1);
     Backward(10);
+    setLED(1, 0, 0);
+    turnAngle(35);
     endTime = millis();
   }
 }
 
-void lineFollow(int distanceGoal) {
+//follows the black line using a zig zag method of reaquisition of the line
+int lineFollow(int distanceGoal) {
+
 
   unsigned int distanceTravelled = 0;
 
@@ -426,6 +460,12 @@ void lineFollow(int distanceGoal) {
 
       if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* all three see line scan for junction */
         Forward(1);
+        if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) {
+          return 1;
+        }
+        else {
+          return -1;
+        }
         //    setLED(0,1,0);
 #ifdef DEBUG LINE
         Serial.println("all three sensors see black, start scanning for junction and move forward");
@@ -499,30 +539,52 @@ void lineFollow(int distanceGoal) {
   }
 }
 
+//follows the line for a set number of junctions
+void junctCount(int junctNumber) {
+  int junctionCount = 0;
+  int junctAverage = 0;
+  while (junctionCount <= junctNumber) {
+    junctAverage += lineFollow(1);
+    if (junctAverage >= 4) {
+      junctionCount++;
+      lineFollow(3);
+    }
+  }
+
+}
+
+//checks to see if a junction is currently seen, returns 1 if junction is seen, -1 if not seen
 int junctDetect() {
-//  unsigned int start = millis();
-//  unsigned int endTime = start;
-int junctState = 0;
-      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* best case mid sees line left and right don't on track forwards */
 
-juntState=0;
-return junctState;
+  int junctState = 0;
+
+  for (int i = 0; i < 50; i++) {
+
+    if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* best case mid sees line left and right don't on track forwards */
+
+      junctState--;
 
 #ifdef DEBUG JUNCT
-        Serial.println("best case mid sees line left and right don't on track forwards");
+      Serial.println("best case mid sees line left and right don't on track forwards");
 #endif
-      }
+    }
 
-        if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* all three see line scan for junction */
+    if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* all three see line scan for junction */
 
+      junctState++;
 
-return junctState;
- 
 #ifdef DEBUG JUNCT
-        Serial.println("all three sensors see black, start scanning for junction and move forward");
+      Serial.println("all three sensors see black, start scanning for junction and move forward");
 #endif
-        }
-        
+    }
+
+  }
+  if (junctState > 0) {
+    return 1;
+  }
+  else {
+    return -1;
+  }
 }
 
 void setup() {
@@ -557,6 +619,7 @@ void setup() {
   calLDR();
 #endif
 
+#ifdef DEBUG
   Serial.println(PI);
   Serial.println(stopR);
   Serial.println(stopL);
@@ -564,6 +627,7 @@ void setup() {
   Serial.println(rightThresh);
   Serial.println(midThresh);
   Serial.println(leftThresh);
+#endif  
 
   Halt();
   setLED(1, 0, 0);
@@ -571,53 +635,67 @@ void setup() {
 }
 void loop() {
 
-  waitKEY(PBL);
-
-
-
 #ifdef DANCE
 
+waitKEY(1,0);
   //demonstration of straight line movement
-  Forward(50);
-  Backward(50);
-  //demonstraction of turn in place
-  turnAngle(90);
-  turnAngle(-90);
+//  Forward(50);
+//  Backward(50);
+//  //demonstraction of turn in place
+//  turnAngle(90);
+//  turnAngle(-90);
   //Dance time
   danceTime(20);
 
 #endif
 
- 
+
 
 #ifdef LINE
 
-    //current values of 75cm are definitly due to battery voltage replace with fresh by friday
-    lineFollow(75);
-    turnAngle(180);
-    lineFollow(75);
-    turnAngle(180);
+if (waitKEY(0,1)) {
+  Serial.println("follow the line");
+  //current values of 75cm are definitly due to battery voltage replace with fresh by friday
+  lineFollow(75);
+  turnAngle(180);
+  lineFollow(75);
+  turnAngle(180);
+}
+else{}
 
 #endif
 
 
 #ifdef OBSTACLE
 
-    if (scan()) {
-      Serial.println("turn");
-      turnAngle(180);
-    }
-    else {
-      Serial.println("follow");
-      lineFollow();
-    }
+if (waitKEY(1,0)) {
+  while (true){
+  Serial.println("Follow the line and look for obstacles");
+  if (scan()) {
+    Serial.println("turn");
+    turnAngle(180);
+  }
+  else {
+    Serial.println("follow");
+    lineFollow(1);
+  }
+}}
+else{}
 
 #endif
 
 #ifdef JUNCT
 
-
-junctCounter(3);
+if (waitKEY(1,1)) {
+  Serial.println("count the junctions and follow the line");
+  junctCount(1);
+  Forward(5);
+  Serial.println("counted specified number of junctions");
+  turnAngle(180);
+  junctCount(1);
+  turnAngle(-180);
+}
+else{}
 
 #endif
 }
