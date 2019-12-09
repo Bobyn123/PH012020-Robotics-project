@@ -45,15 +45,15 @@ const int LDRr = A0;
 const int LDRm = A1;
 const int LDRl = A2;
 //LDR mid light values
-int rightThresh = readUIValue(16);
-int midThresh = readUIValue(13);
-int leftThresh = readUIValue(10);
+const int rightThresh = readUIValue(16);
+const  midThresh = readUIValue(13);
+const leftThresh = readUIValue(10);
 //const ints for IR emitter and reciever pins
 const int IRT = 3;
 const int IRR = 2;
 //right and left servo stop values
-const int stopL = EEPROM.read(0);
-const int stopR = EEPROM.read(1);
+const byte stopL = EEPROM.read(0);
+const byte stopR = EEPROM.read(1);
 //const ints related to wheel diamater and servo offsets
 const int leftServoOffset = EEPROM.read(2);
 const int rightServoOffset = EEPROM.read(3);
