@@ -36,4 +36,14 @@ results for not carpet
 58.72
 average time of 58.206s for one full rotation and time of 0.1616833333s for one degree of rotation or 0.162s for simplicity
 
+average value for 360 degree turn
+23.12
+24.88
+25.06
+24.94
+25.28
+
+average of 24.656 for full turn
+0.0684888888s for one degre
+
 Average infraRed sensor range is 24cm
