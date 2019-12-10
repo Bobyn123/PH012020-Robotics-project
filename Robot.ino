@@ -28,10 +28,10 @@
 
 //#define CAL
 
-#define DANCE
-//#define LINE
-//#define OBSTACLE
-//#define JUNCT
+//#define DANCE
+#define LINE
+#define OBSTACLE
+#define JUNCT
 
 // required to read EEPROM values for calibration settings
 unsigned int readUIValue(int eepromAddress) {
@@ -391,8 +391,8 @@ void debugLDR() {
 
 #endif
 
-/*setspeed for both servos in format that has stop value at 0, forward is + backwars is -
-   as opposed to previous format where 90ish was toped and 0 and 180 where full reverse and full forward respectivly*/
+/*setspeed for both servos in format that has stop value at 0, forward is + backwards is -
+   as opposed to previous format where 90ish was stoped and 0 and 180 where full reverse and full forward respectivly*/
 void setspeed(int R, int L) {
   rightServo.write(stopR - R);
   leftServo.write(stopL + L);
@@ -457,7 +457,7 @@ void turnAngle(int deg) {
 }
 
 
-//follows the black line by only moving forward when only the middle LDR can see the black line, takes an input of a desired distance and will follow the line for that distance
+//follows the black line by only moving forward when only the middle LDR can see the black line and the other two cannot, takes an input of a desired distance and will follow the line for that distance
 void lineFollow(int distanceGoal) {
 
   unsigned int distanceTravelled = 0;
@@ -832,7 +832,7 @@ void setup() {
 
   //only runs calibration routine if CAL is defined
 #ifdef CAL
-//  calServo();
+  calServo();
   Halt();
   setLED(0, 1, 1);
   calLDR();
@@ -910,9 +910,9 @@ void loop() {
 
   //if left and right pushbuttons pressed, count 3 junctions, turn 180 and count 3 junctions
   if (checkKEY(1, 1)) {
-    junctionCounter(1);
+    junctionCounter(3);
     turnAngle(180);
-    junctionCounter(1);
+    junctionCounter(2);
     Halt();
   }
   else {
