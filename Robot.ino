@@ -28,7 +28,7 @@
 
 //#define CAL
 
-//#define DANCE
+#define DANCE
 //#define LINE
 //#define OBSTACLE
 //#define JUNCT
@@ -863,7 +863,7 @@ void loop() {
   turnAngle(90);
   turnAngle(-90);
   //Dance time
-  danceTime(20);
+  danceTime(1);
 
 #endif
 
@@ -910,9 +910,9 @@ void loop() {
 
   //if left and right pushbuttons pressed, count 3 junctions, turn 180 and count 3 junctions
   if (checkKEY(1, 1)) {
-    junctionCounter(3);
+    junctionCounter(1);
     turnAngle(180);
-    junctionCounter(2);
+    junctionCounter(1);
     Halt();
   }
   else {
