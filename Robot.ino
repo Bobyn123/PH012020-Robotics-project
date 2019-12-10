@@ -5,18 +5,15 @@
 /* BASIC USER GUIDE
   define CAL to allow for calibration of servos and LDR light averages
   to calibrate servos:
-
             left servo calibrated first then right
     observe left servo to see if it has stopped, if it has not stopped
     press left pushbutton to increment speed by 1, repeat untill left servo has stopped
     press right pushbutton to begin calibration of right servo and repeat proccess for right servo
     press right pushbutton to exit calibration
-
   to calibrate LDR:
       light level is recorded first, then dark level
     place sensors over white paper and press left push button, wait untill all LEDS flash for 1 second
     place sensors over black paper and press left push button, wait untill all LEDS flash for 1 second and LDR calibration will be complete
-
 */
 
 #include <Servo.h>
@@ -415,7 +412,6 @@ void Backward (float cm) {
 }
 
 /*takes input in degrees and multiplies by time taken to turn one degree positive values will turn clockwise, negative values will turn counterclockwise
-
 */
 void turnAngle(int deg) {
   float turnTime = (abs(deg) * timeForOneDegreeTurn); // takes absolute value of input degree incase counterclockwise angle entered, multiplies with time for one degree of turning
@@ -447,6 +443,151 @@ void turnAngle(int deg) {
 
 //follows the black line by only moving forward when only the middle LDR can see the black line, takes an input of a desired distance and will follow the line for that distance
 void lineFollow(int distanceGoal) {
+
+  unsigned int distanceTravelled = 0;
+
+  //if the distance entered is positive, follows the line forward
+  if (distanceGoal > 0) {
+    //  goes forwards
+    Serial.println("Follow Line Forwards");
+    while (distanceTravelled < distanceGoal) {
+
+      setLED(0, 0, 0);
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* all three don't see line turn 15 degree until line found */
+        setLED(0, 1, 0);
+        turnAngle(15);
+        setLED(0, 0, 0);
+      }
+
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) < rightThresh )) { /* only right sees line hard turn right */
+        setLED(0, 1, 0);
+        turnAngle(10);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("only right sees line hard turn right");
+#endif
+      }
+
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* right and mid see line gentle turn right */
+        setLED(0, 1, 0);
+        turnAngle(5);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("right and mid see line gentle turn right");
+#endif
+      }
+
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* best case mid sees line left and right don't on track forwards */
+        setLED(0, 1, 0);
+        Forward(5);
+        distanceTravelled += 3;
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("best case mid sees line left and right don't on track forwards");
+#endif
+      }
+
+      if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* left and mid see line, light turn left */
+        setLED(0, 1, 0);
+        turnAngle(-5);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("left and mid see line, light turn left");
+#endif
+      }
+
+      if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* only left sees line hard turn left */
+        setLED(0, 1, 0);
+        turnAngle(-10);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("only left sees line hard turn left ");
+#endif
+      }
+
+      if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* all three see line scan for junction */
+#ifdef DEBUG LINE
+        Serial.println("all three sensors see black, start scanning for junction and move forward");
+#endif
+        Forward(1);
+        distanceTravelled += 1;
+      }
+    }
+    return;
+  }
+  //if entered distance is negative, follows the line backwards
+  if (distanceGoal < 0) {
+    Serial.println("Follow Line Backwards");
+    while (distanceTravelled < distanceGoal) {
+
+      setLED(0, 0, 0);
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* all three don't see line turn 1 degree untill line found */
+        turnAngle(15);
+        setLED(0, 0, 0);
+      }
+
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) < rightThresh )) { /* only right sees line hard turn right */
+        setLED(0, 1, 0);
+        turnAngle(10);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("only right sees line hard turn right");
+#endif
+      }
+
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* right and mid see line gentle turn right */
+        setLED(0, 1, 0);
+        turnAngle(5);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("right and mid see line gentle turn right");
+#endif
+      }
+
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* best case mid sees line left and right don't on track forwards */
+        setLED(0, 1, 0);
+        Backward(3);
+        distanceTravelled += 3;
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("best case mid sees line left and right don't on track forwards");
+#endif
+      }
+
+      if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) > rightThresh )) { /* left and mid see line, light turn left */
+        setLED(0, 1, 0);
+        turnAngle(-5);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("left and mid see line, light turn left");
+#endif
+      }
+
+      if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* only left sees line hard turn left */
+        setLED(0, 1, 0);
+        turnAngle(-10);
+        setLED(0, 0, 0);
+#ifdef DEBUG_LINE
+        Serial.println("only left sees line hard turn left ");
+#endif
+      }
+
+      if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) { /* all three see line scan for junction */
+#ifdef DEBUG_LINE
+        Serial.println("all three sensors see black, start scanning for junction and move forward");
+#endif
+        Backward(1);
+        distanceTravelled += 1;
+      }
+    }
+  }
+  else {
+    return;
+  }
+}
+
+//same function as used for line following but if a junction has been detected breaks from the function
+void junctLineFollow(int distanceGoal) {
 
   unsigned int distanceTravelled = 0;
 
@@ -594,7 +735,7 @@ void junctionCounter(int junctNumber) {
   //  while the nmumber of junctions seen is less than the desired number follow the line counting junctions
   while (junctCount < junctNumber) {
     setLED(0, 1, 0);
-    lineFollow(1); //follows line for 1cm
+    junctLineFollow(1); //follows line for 1cm
     setLED(0, 0, 0);
     //    if a junction is detected, moves forward until the junction can no longer be seen and increments the junction count by one
     if ((analogRead(LDRl) < leftThresh) && (analogRead(LDRm) < midThresh ) && (analogRead(LDRr) < rightThresh )) {
