@@ -19,19 +19,19 @@
 #include <Servo.h>
 #include <EEPROM.h>
 
-#define DEBUG
-#define DEBUG_CAL
-#define DEBUG_LDR
-#define DEBUG_LINE
-#define DEBUG_IR
-#define DEBUG_JUNCT
+//#define DEBUG
+//#define DEBUG_CAL
+//#define DEBUG_LDR
+//#define DEBUG_LINE
+//#define DEBUG_IR
+//#define DEBUG_JUNCT
 
-#define CAL
+//#define CAL
 
-#define DANCE
-#define LINE
-#define OBSTACLE
-#define JUNCT
+//#define DANCE
+//#define LINE
+//#define OBSTACLE
+//#define JUNCT
 
 // required to read EEPROM values for calibration settings
 unsigned int readUIValue(int eepromAddress) {
@@ -75,7 +75,7 @@ const byte leftServoOffset = EEPROM.read(2);
 const byte rightServoOffset = EEPROM.read(3);
 const byte wheelDiameter = EEPROM.read(4);
 //const float and int for time taken to move 1cm or turn 1 degree
-const float timeForOneDegreeTurn = 16.3;
+const float timeForOneDegreeTurn = 14.3;
 const int timeForOneCmRotation = 11780;
 //const int for wheel circumference
 const int wheelCircumference = (wheelDiameter * pi);
@@ -273,7 +273,7 @@ void calLDR() {
     lightM += analogRead(LDRm);
     lightL += analogRead(LDRl);
 
-#ifdef DEBUG CAL
+#ifdef DEBUG_CAL
     Serial.print("Val right ");
     Serial.println(analogRead(LDRr));
 
@@ -297,7 +297,7 @@ void calLDR() {
     darkM += analogRead(LDRm);
     darkL += analogRead(LDRl);
 
-#ifdef DEBUG CAL
+#ifdef DEBUG_CAL
     Serial.print("Val right ");
     Serial.println(analogRead(LDRr));
 
@@ -319,6 +319,22 @@ void calLDR() {
   darkR /= 25;
   darkM /= 25;
   darkL /= 25;
+
+#ifdef DEBUG_CAL
+Serial.print("lightR is");
+Serial.println(lightR);
+Serial.print("lightM is");
+Serial.println(lightM);
+Serial.print("lightL is");
+Serial.println(lightL);
+
+Serial.print("darkR is");
+Serial.println(darkR);
+Serial.print("darkM is");
+Serial.println(darkM);
+Serial.print("darkL is");
+Serial.println(darkM);
+#endif
 
   //  taking average between value light and dark readings
 
@@ -451,6 +467,13 @@ void lineFollow(int distanceGoal) {
     //  goes forwards
     Serial.println("Follow Line Forwards");
     while (distanceTravelled < distanceGoal) {
+
+Serial.print("lightR is");
+Serial.println(analogRead(LDRr));
+Serial.print("lightM is");
+Serial.println(analogRead(LDRm));
+Serial.print("lightL is");
+Serial.println(analogRead(LDRl));
 
       setLED(0, 0, 0);
       if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* all three don't see line turn 15 degree until line found */
@@ -809,7 +832,7 @@ void setup() {
 
   //only runs calibration routine if CAL is defined
 #ifdef CAL
-  calServo();
+//  calServo();
   Halt();
   setLED(0, 1, 1);
   calLDR();
@@ -830,7 +853,6 @@ void setup() {
 
 }
 void loop() {
-
 
 #ifdef DANCE
 
@@ -890,7 +912,7 @@ void loop() {
   if (checkKEY(1, 1)) {
     junctionCounter(3);
     turnAngle(180);
-    junctionCounter(3);
+    junctionCounter(2);
     Halt();
   }
   else {
