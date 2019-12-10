@@ -392,11 +392,11 @@ void Halt() {
   return;
 }
 
-/*takes input distance in mm and travels that distance by dividing the desired distance by the circumference of the wheels and multiplying by the time needed for one full rotation,
+/*takes input distance in cm and travels that distance by dividing the desired distance by the circumference of the wheels and multiplying by the time needed for one full rotation,
   setting the servos to move forward and waiting for the desired time to have elapsed */
 
-void Forward(float mm) {
-  unsigned int distanceTime = (timeForOneCmRotation * ( mm / wheelCircumference));
+void Forward(float cm) {
+  unsigned int distanceTime = (timeForOneCmRotation * ( cm / wheelCircumference));
   Halt();
   setspeed(rightServoOffset, leftServoOffset);
   delay(distanceTime);
@@ -405,8 +405,8 @@ void Forward(float mm) {
 }
 
 //same but for backwards
-void Backward (float mm) {
-  unsigned int distanceTime = (timeForOneCmRotation * ( mm / wheelCircumference)); //multiply distance entered by time required for one cm
+void Backward (float cm) {
+  unsigned int distanceTime = (timeForOneCmRotation * ( cm / wheelCircumference)); //multiply distance entered by time required for one cm
   Halt();
   setspeed(-rightServoOffset, -leftServoOffset);
   delay(distanceTime);
@@ -457,7 +457,7 @@ void lineFollow(int distanceGoal) {
     while (distanceTravelled < distanceGoal) {
 
       setLED(0, 0, 0);
-      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* all three don't see line turn 1 degree untill line found */
+      if ((analogRead(LDRl) > leftThresh) && (analogRead(LDRm) > midThresh ) && (analogRead(LDRr) > rightThresh )) { /* all three don't see line turn 15 degree until line found */
         setLED(0, 1, 0);
         turnAngle(15);
         setLED(0, 0, 0);
